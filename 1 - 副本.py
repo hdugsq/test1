@@ -225,7 +225,7 @@ class Example(QWidget):
             self.pu9.move(position)
             self.pu9.setVisible(True)
         elif self.button10.isDown():
-            self.pu10 = MLP('MLP',self)
+            self.pu10 = MLP('mlp',self)
             self.pu10.r=r
             ch[9]=ch[9]+1
             self.pu10.ch=ch[9]
@@ -355,7 +355,7 @@ mydata=data''')
                     label=QLabel(sender.sig[i])
                     label2=QLabel(str(sender.set[i]))
                     self.formLayout.addRow(label,label2)
-                if sender.text()=='svm' or sender.text()=='knn':
+                if sender.text()=='svm' or sender.text()=='knn' or sender.text()=='mlp':
                     label=QLabel('分类结果')
                     label2=QLabel('')
                     label.setStyleSheet('font-size:30px;')
