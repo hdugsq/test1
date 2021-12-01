@@ -9,6 +9,7 @@ from PyQt5.QtCore import pyqtSignal,Qt
 from PyQt5.QtWidgets import QPushButton
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
+from sklearn.neural_network import MLPClassifier
 from sklearn import svm
 from sklearn.neighbors import KNeighborsClassifier
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -154,6 +155,34 @@ class KNN():
         X_train_std = scaler.fit_transform(x)
         pr=scaler.transform(pr)
         clf = KNeighborsClassifier(n_neighbors=self.set[4],algorithm='auto',weights='distance')
+        clf = clf.fit(X_train_std,y.ravel())
+        b=clf.predict(pr)
+        print(b)
+class MLP():
+    sig=['tr_s','tr_e','pr_s','pr_e']
+    set=[0,300,311,324]
+    mdata=[]
+    r=''
+    def mset(self,a):
+        self.set=a
+    def do(self):
+        pr=[]
+        label = pd.read_csv(self.r)
+        self.mdata = [[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))]
+        x = np.array(self.mdata[self.set[0]:self.set[1]])
+        y = label['bq'].values[self.set[0]:self.set[1]]
+        for i in range(self.set[2],self.set[3]):
+            pr.append(self.mdata[i])
+        scaler = StandardScaler()
+        X_train_std = scaler.fit_transform(x)
+        pr=scaler.transform(pr)
+        clf = MLPClassifier(activation='relu', alpha=1e-05, batch_size='auto', beta_1=0.9,
+            beta_2=0.999, early_stopping=False, epsilon=1e-08,
+            hidden_layer_sizes=(3, 3), learning_rate='constant',
+            learning_rate_init=0.001, max_iter=100000, momentum=0.9,
+            nesterovs_momentum=True, power_t=0.5, random_state=1, shuffle=True,
+            solver='adam', tol=0.0001, validation_fraction=0.1, verbose=False,
+            warm_start=False)
         clf = clf.fit(X_train_std,y.ravel())
         b=clf.predict(pr)
         print(b)

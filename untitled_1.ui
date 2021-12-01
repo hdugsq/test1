@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1527</width>
-    <height>817</height>
+    <height>862</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
      <x>1220</x>
      <y>60</y>
      <width>311</width>
-     <height>761</height>
+     <height>801</height>
     </rect>
    </property>
    <property name="minimumSize">
@@ -93,7 +93,7 @@ selection-background-color: rgb(30, 30, 30);</string>
    <property name="geometry">
     <rect>
      <x>390</x>
-     <y>740</y>
+     <y>780</y>
      <width>91</width>
      <height>81</height>
     </rect>

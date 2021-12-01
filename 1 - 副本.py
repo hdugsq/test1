@@ -25,7 +25,7 @@ c=0
 d=0
 sig=0
 sig2=0
-ch=[0,0,0,0,0,0,0,0,0]
+ch=[0,0,0,0,0,0,0,0,0,0]
 r3=[]
 p=[]
 dat=[]
@@ -140,6 +140,11 @@ class Example(QWidget):
         self.button9.move(0, 700)
         self.button9.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
+                                
+        self.button10 = Button("mlp", self)
+        self.button10.move(0, 760)
+        self.button10.setStyleSheet("QPushButton{color:white}"
+                                  "QPushButton{background-color:rgb(54, 54, 54)}")
 
     def dragEnterEvent(self, e):
         e.accept()
@@ -219,6 +224,14 @@ class Example(QWidget):
             self.pu9.clicked.connect(self.upd)
             self.pu9.move(position)
             self.pu9.setVisible(True)
+        elif self.button10.isDown():
+            self.pu10 = MLP('MLP',self)
+            self.pu10.r=r
+            ch[9]=ch[9]+1
+            self.pu10.ch=ch[9]
+            self.pu10.clicked.connect(self.upd)
+            self.pu10.move(position)
+            self.pu10.setVisible(True)
         e.setDropAction(Qt.MoveAction)
         e.accept()
     def print(self,sender):

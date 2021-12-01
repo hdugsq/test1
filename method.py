@@ -15,6 +15,8 @@ from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QSpinBox
 from PyQt5.QtCore import QTimer, pyqtSignal,Qt
 from PyQt5.QtWidgets import QPushButton
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn import svm
@@ -511,6 +513,7 @@ class KNN(QPushButton):
         label = pd.read_csv(self.r)
         nx = copy.deepcopy(self.mdata)
         nx = [[row[i] for row in nx] for i in range(len(nx[0]))]
+        self.set[1]=len(label.values)
         x = np.array(nx[self.set[0]:self.set[1]])
         y = label['bq'].values[self.set[0]:self.set[1]]
         for i in range(self.set[2],self.set[3]):
@@ -527,29 +530,29 @@ class KNN(QPushButton):
         label = pd.read_csv(self.r)
         nx = copy.deepcopy(self.mdata)
         nx = [[row[i] for row in nx] for i in range(len(nx[0]))]
+        pca=PCA(n_components=2)
+        nx=pca.fit_transform(nx)
         x = np.array(nx[self.set[0]:self.set[1]])
         y = label['bq'].values[self.set[0]:self.set[1]]
+        print(self.set)
+        pca=PCA(n_components=2)
         for i in range(self.set[2],self.set[3]):
-            pr.append(nx[i])
+            pr.append(copy.deepcopy(nx[i]))
         scaler = StandardScaler()
-        ox=x[:,5:7]
-        X_train_std = scaler.fit_transform(ox)
+        X_train_std = scaler.fit_transform(x)
         pr=np.array(pr)
-        pr2 = scaler.transform(pr[:,5:7])
+        pr2=scaler.transform(pr)
         clf = KNeighborsClassifier(n_neighbors=self.set[4],algorithm='auto',weights='distance')
         clf = clf.fit(X_train_std,y.ravel())
         self.b=clf.predict(pr2)
         print(self.b)
         x1_min, x1_max=X_train_std[:,0].min(), X_train_std[:,0].max()/5 #第0维特征的范围
-        x2_min, x2_max=X_train_std[:,1].min(), X_train_std[:,1].max()/5 #第1维特征的范围
-        print(x1_min, x1_max,x2_min, x2_max)
-        x1,x2=np.mgrid[x1_min:x1_max:500j, x2_min:x2_max:500j ] #生成网络采样点
+        x2_min, x2_max=X_train_std[:,1].min(), X_train_std[:,1].max() #第1维特征的范围
+        x1,x2=np.mgrid[x1_min:x1_max:800j, x2_min:x2_max:800j ] #生成网络采样点
         grid_test=np.stack((x1.flat,x2.flat) ,axis=1) #测试点
         grid_hat = clf.predict(grid_test)       # 预测分类值
-        print(grid_hat)
         grid_hat = grid_hat.reshape(x1.shape)  # 使之与输入的形状相同
         matplotlib.rcParams['font.sans-serif']=['SimHei']
-        #设置颜色
         cm_light=matplotlib.colors.ListedColormap(['#A0FFA0', '#FFA0A0', '#A0A0FF'])
         cm_dark=matplotlib.colors.ListedColormap(['g','r','b'] )
         plt.pcolormesh(x1, x2, grid_hat, cmap=cm_light)     # 预测值的显示
@@ -594,6 +597,81 @@ class KNN(QPushButton):
                     f.write('\''+self.set[i]+'\',')
             f.write(str(self.set[len(self.set)-1])+'])')
             f.write('\nknn'+str(self.ch)+'.do()')
+            f.write('\ndpp'+str(self.ch)+'.do()')
+class MLP(QPushButton):
+    name='MLP分类'
+    sig=['tr_s','tr_e','pr_s','pr_e']
+    set=[0,400,211,224]
+    mdata=[]
+    r=''
+    ch=0
+    b=[]
+    rightClicked = pyqtSignal()
+    def mousePressEvent(self, evt):
+        super().mousePressEvent(evt)
+        if evt.button()==Qt.RightButton:
+            self.rightClicked.emit()
+            if len(self.mdata)==0:
+                self.setwin()
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+    def do(self):
+        pr=[]
+        label = pd.read_csv(self.r)
+        nx = copy.deepcopy(self.mdata)
+        nx = [[row[i] for row in nx] for i in range(len(nx[0]))]
+        self.set[1]=len(label.values)
+        x = np.array(nx[self.set[0]:self.set[1]])
+        y = label['bq'].values[self.set[0]:self.set[1]]
+        for i in range(self.set[2],self.set[3]):
+            pr.append(nx[i])
+        scaler = StandardScaler()
+        X_train_std = scaler.fit_transform(x)
+        pr = scaler.transform(pr)
+        clf = MLPClassifier(activation='relu', alpha=1e-05, batch_size='auto', beta_1=0.9,
+            beta_2=0.999, early_stopping=False, epsilon=1e-08,
+            hidden_layer_sizes=(3, 3), learning_rate='constant',
+            learning_rate_init=0.001, max_iter=100000, momentum=0.9,
+            nesterovs_momentum=True, power_t=0.5, random_state=1, shuffle=True,
+            solver='adam', tol=0.0001, validation_fraction=0.1, verbose=False,
+            warm_start=False)
+        clf = clf.fit(X_train_std,y.ravel())
+        self.b=clf.predict(pr)
+        print(self.b)
+    def setwin(self):
+        al=pd.read_csv(self.r)
+        al=np.array(al).tolist()
+        lena=len(al)
+        win3=window3()
+        def aa():
+            for i in range(len(self.sig)):
+                self.set[i]=int(win3.formLayout.itemAt(i,1).widget().value())
+        for i in range(len(self.sig)):
+            label=QLabel(self.sig[i])
+            line=QSpinBox()
+            line.setMinimum(0)
+            line.setMaximum(lena)
+            line.setValue(self.set[i])
+            win3.formLayout.addRow(label,line)
+        win3.show()
+        win3.pushButton_2.clicked.connect(aa)
+        win3.pushButton_2.clicked.connect(win3.close)
+    def totxt1(self):
+        pass
+    def totxt2(self):
+        with codecs.open('data.txt','a','utf-8') as f:
+            f.write('\nmlp'+str(self.ch)+'=MLP()')
+            f.write('\nmlp'+str(self.ch)+'.r=r')
+            f.write('\nmlp'+str(self.ch)+'.mdata=mydata')
+            f.write('\nmlp'+str(self.ch)+'.mset([')
+            for i in range(len(self.set)-1):
+                if type(self.set[i])==type(1):
+                    f.write(str(self.set[i])+',')
+                else:
+                    f.write('\''+self.set[i]+'\',')
+            f.write(str(self.set[len(self.set)-1])+'])')
+            f.write('\nmlp'+str(self.ch)+'.do()')
 def showtime(ax,canvas,x):
     ax.clear()
     ax.plot(x)
