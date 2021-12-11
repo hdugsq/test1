@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1527</width>
-    <height>862</height>
+    <height>881</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
      <x>1220</x>
      <y>60</y>
      <width>311</width>
-     <height>801</height>
+     <height>821</height>
     </rect>
    </property>
    <property name="minimumSize">
@@ -64,7 +64,7 @@ selection-background-color: rgb(30, 30, 30);</string>
    <widget class="QWidget" name="scrollAreaWidgetContents">
     <property name="geometry">
      <rect>
-      <x>-275</x>
+      <x>-550</x>
       <y>0</y>
       <width>2100</width>
       <height>2100</height>
@@ -92,8 +92,8 @@ selection-background-color: rgb(30, 30, 30);</string>
   <widget class="QPushButton" name="pushButton_2">
    <property name="geometry">
     <rect>
-     <x>390</x>
-     <y>780</y>
+     <x>400</x>
+     <y>800</y>
      <width>91</width>
      <height>81</height>
     </rect>

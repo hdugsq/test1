@@ -15,14 +15,3 @@ xb1=XB()
 xb1.mdata=mydata
 xb1.mset(['db8'])
 xb1.do()
-mydata=xb1.mdata
-fFt1=FFT()
-fFt1.mdata=mydata
-fFt1.mset(['振幅'])
-fFt1.do()
-mydata=fFt1.mdata
-mlp1=MLP()
-mlp1.r=r
-mlp1.mdata=mydata
-mlp1.mset([0,452,211,224])
-mlp1.do()

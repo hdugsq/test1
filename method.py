@@ -8,6 +8,8 @@ import matplotlib
 import numpy as np
 import pandas as pd
 import copy
+import os
+import time
 from scipy import signal
 from PyQt5.QtGui import QDrag,QPainter,QPen,QColor,QIcon
 from PyQt5.uic import loadUi
@@ -20,7 +22,17 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn import svm
+import csv
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+route=""
+r3=[]
+def Savecsv(name,data):
+    with open(name,encoding='utf-8',mode='w',newline='') as f:
+        writer=csv.writer(f)
+        writer.writerow(r3)
+        for i in data:
+            writer.writerow(i)
+
 def Distance(x, y):
     sum = 0
     leng  = len(x)
@@ -59,8 +71,13 @@ class WJ(QPushButton):
         super().__init__(title, parent)
         self.setStyleSheet("background-color: rgb(203, 248, 235)")
     def do(self):
-        pass
+        global route
+        b=time.strftime("%Y-%m-%d_%H-%M-%S_", time.localtime())
+        a=os.getcwd()
+        route=b+self.r.rsplit("/")[-1][:-4]
+        os.makedirs(a+'\\'+route)
     def play(self):
+        # 韩东根写的代码
         self.win3=window3()
         
         try:
@@ -87,6 +104,7 @@ class TD(QPushButton):
     sig=[]
     set=[]
     mdata=[]
+    r3=[]
     r=''
     ch=0
     rightClicked = pyqtSignal()
@@ -99,7 +117,10 @@ class TD(QPushButton):
         super().__init__(title, parent)
         self.setStyleSheet("background-color: rgb(203, 248, 235)")
     def do(self):
-        pass
+        global route,r3
+        r3=self.r3
+        nx=[[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))]
+        Savecsv(route+"/"+'td.csv',nx)
     def play(self):
         print(len(self.mdata))
         for i in range(len(self.mdata)):
@@ -672,6 +693,81 @@ class MLP(QPushButton):
                     f.write('\''+self.set[i]+'\',')
             f.write(str(self.set[len(self.set)-1])+'])')
             f.write('\nmlp'+str(self.ch)+'.do()')
+class HB(QPushButton):
+    name='合并输入'
+    sig=['pca(y/n)']
+    set=['y']
+    mdata=[]
+    ndata=[]
+    sign=0
+    r=''
+    ch=0
+    b=[]
+    rightClicked = pyqtSignal()
+    def mousePressEvent(self, evt):
+        super().mousePressEvent(evt)
+        if evt.button()==Qt.RightButton:
+            self.rightClicked.emit()
+            if len(self.mdata)==0:
+                self.setwin()
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+    def init(self):
+        ddata=copy.deepcopy(self.mdata)
+        ddata = [[row[i] for row in ddata] for i in range(len(ddata[0]))]
+        self.ndata.append(np.array(ddata))
+    def do(self):
+        a=np.array(self.ndata)
+        b=[]
+        for i in range(len(a[0])):
+            for j in range(len(a[0][0])):
+                b.append(a[:,i][:,j])
+        pca=PCA(n_components=1)
+        nx=pca.fit_transform(b)
+        c=[]
+        d=[]
+        for i in range(len(nx)):
+            if i%len(a[0][0])==0:
+                d.append(c)
+                c=nx[i]
+            else:
+                c=np.append(c,nx[i])
+        d=d[1:]
+        d.append(c)
+        d= [[row[i] for row in d] for i in range(len(d[0]))]
+        self.mdata=d
+    def setwin(self):
+        win3=window3()
+        def aa():
+            for i in range(len(self.sig)):
+                self.set[i]=win3.formLayout.itemAt(i,1).widget().text()
+        for i in range(len(self.sig)):
+            label=QLabel(self.sig[i])
+            line=QLineEdit(self.set[i])
+            win3.formLayout.addRow(label,line)
+        win3.show()
+        win3.pushButton_2.clicked.connect(aa)
+        win3.pushButton_2.clicked.connect(win3.close)
+    def totxt1(self):
+        with codecs.open('data.txt','a','utf-8') as f:
+            f.write('\nhb'+str(self.ch)+'.do()')
+            f.write('\nmydata=hb'+str(self.ch)+'.mdata')
+    def totxt2(self):
+        with codecs.open('data.txt','a','utf-8') as f:
+            if self.sign==0:
+                f.write('\nhb'+str(self.ch)+'=HB()')
+                f.write('\nhb'+str(self.ch)+'.r=r')
+                f.write('\nhb'+str(self.ch)+'.mset([')
+            f.write('\nhb'+str(self.ch)+'.mdata=mydata')
+            for i in range(len(self.set)-1):
+                if type(self.set[i])==type(1):
+                    f.write(str(self.set[i])+',')
+                else:
+                    f.write('\''+self.set[i]+'\',')
+            f.write('\''+str(self.set[len(self.set)-1])+'\'])')
+            f.write('\nhb'+str(self.ch)+'.init()')
+        self.sign=1
 def showtime(ax,canvas,x):
     ax.clear()
     ax.plot(x)

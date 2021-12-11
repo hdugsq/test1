@@ -1,3 +1,4 @@
+import copy
 from numpy.lib.arraysetops import _setxor1d_dispatcher
 import pywt
 import scipy.fft as fft
@@ -10,6 +11,7 @@ from PyQt5.QtWidgets import QPushButton
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
 from sklearn.neural_network import MLPClassifier
+from sklearn.decomposition import PCA
 from sklearn import svm
 from sklearn.neighbors import KNeighborsClassifier
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -186,3 +188,35 @@ class MLP():
         clf = clf.fit(X_train_std,y.ravel())
         b=clf.predict(pr)
         print(b)
+class HB():
+    sig=['pca(y/n)']
+    set=['y']
+    mdata=[]
+    ndata=[]
+    r=''
+    def mset(self,a):
+        self.set=a
+    def init(self):
+        ddata=copy.deepcopy(self.mdata)
+        ddata = [[row[i] for row in ddata] for i in range(len(ddata[0]))]
+        self.ndata.append(np.array(ddata))
+    def do(self):
+        a=np.array(self.ndata)
+        b=[]
+        for i in range(len(a[0])):
+            for j in range(len(a[0][0])):
+                b.append(a[:,i][:,j])
+        pca=PCA(n_components=1)
+        nx=pca.fit_transform(b)
+        c=[]
+        d=[]
+        for i in range(len(nx)):
+            if i%len(a[0][0])==0:
+                d.append(c)
+                c=nx[i]
+            else:
+                c=np.append(c,nx[i])
+        d=d[1:]
+        d.append(c)
+        d= [[row[i] for row in d] for i in range(len(d[0]))]
+        self.mdata=d

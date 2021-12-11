@@ -25,7 +25,7 @@ c=0
 d=0
 sig=0
 sig2=0
-ch=[0,0,0,0,0,0,0,0,0,0]
+ch=[0,0,0,0,0,0,0,0,0,0,0]
 r3=[]
 p=[]
 dat=[]
@@ -124,25 +124,30 @@ class Example(QWidget):
         self.button8.move(0, 530)
         self.button8.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
+                                
+        self.button11 = Button("HB", self)
+        self.button11.move(0, 590)
+        self.button11.setStyleSheet("QPushButton{color:white}"
+                                  "QPushButton{background-color:rgb(54, 54, 54)}")
 
         self.lab3=QLabel('分类',self)
-        self.lab3.move(0, 590)
+        self.lab3.move(0, 650)
         self.lab3.setStyleSheet("QLabel{color:white}"
                                 "QLabel{background-color:rgb(54, 54, 54)}")
 
 
         self.button5 = Button("svm", self)
-        self.button5.move(0, 640)
+        self.button5.move(0, 700)
         self.button5.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
 
         self.button9 = Button("knn", self)
-        self.button9.move(0, 700)
+        self.button9.move(0, 760)
         self.button9.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
                                 
         self.button10 = Button("mlp", self)
-        self.button10.move(0, 760)
+        self.button10.move(0, 820)
         self.button10.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
 
@@ -161,7 +166,7 @@ class Example(QWidget):
             self.pu.move(position)
             self.pu.setVisible(True)
             self.button1.setDisabled(True)
-            r, filetype = QFileDialog.getOpenFileName(self,"选取文件","./", "All Files (*);;Excel Files (*.xls)")
+            r, filetype = QFileDialog.getOpenFileName(self,"选取文件","./", "Csv Files (*.csv)")
             self.pu.r=r
         elif self.button2.isDown():
             self.pu2 = TD('通道选择',self)
@@ -232,6 +237,14 @@ class Example(QWidget):
             self.pu10.clicked.connect(self.upd)
             self.pu10.move(position)
             self.pu10.setVisible(True)
+        elif self.button11.isDown():
+            self.pu11 = HB('hb',self)
+            self.pu11.r=r
+            ch[10]=ch[10]+1
+            self.pu11.ch=ch[10]
+            self.pu11.clicked.connect(self.upd)
+            self.pu11.move(position)
+            self.pu11.setVisible(True)
         e.setDropAction(Qt.MoveAction)
         e.accept()
     def print(self,sender):
@@ -241,6 +254,7 @@ class Example(QWidget):
         label=QLabel('通道')
         label2=QLabel(str(r3))
         self.formLayout.addRow(label,label2)
+        sender.r3=r3
     def paintEvent(self, event):
         qp = QPainter()
         qp.begin(self)
@@ -271,6 +285,7 @@ class Example(QWidget):
                 a=self.pu.x()
                 b=self.pu.y()
                 sig=sig+1
+                sender.r=r
                 with codecs.open('data.txt','w','utf-8') as f:
                     f.write('from mtry import *\nr=\''+r+'\'')
                 label=QLabel(sender.name+':')
@@ -293,6 +308,7 @@ class Example(QWidget):
                         label=QLabel(ans[i][0])
                         line=QLabel(ans2[i][0])
                         self.formLayout.addRow(label,line)
+                sender.do()
             else:
                 c=self.pu.x()
                 d=self.pu.y()
@@ -309,6 +325,7 @@ class Example(QWidget):
                     self.pu2.r='1'
                 dat=mydata
                 sender.mdata=mydata
+                sender.do()
                 with codecs.open('data.txt','a','utf-8') as f:
                     f.write('\nr3=[')
                     for i in range(len(r3)-1):
@@ -332,6 +349,30 @@ mydata=data''')
                 sig=0
                 self.pushButton_2.setDisabled(False)
                 win2.pushButton_2.clicked.connect(lambda:self.print(sender))
+        elif sender.text()=="hb":
+            if sig==0:
+                a=sender.x()
+                b=sender.y()
+                sender.do()
+                dat=sender.mdata
+                sig=sig+1
+                sender.totxt1()
+            else:
+                c=sender.x()
+                d=sender.y()
+                p.append([a,b,c,d])
+                sig=0
+                sender.mdata=dat
+                sender.r=r
+                sender.init()
+                sender.totxt2()
+                label=QLabel(sender.name+':')
+                label.setStyleSheet('font-size:30px;')
+                self.formLayout.addRow(label,QLabel('   '))
+                for i in range(len(sender.sig)):
+                    label=QLabel(sender.sig[i])
+                    label2=QLabel(str(sender.set[i]))
+                    self.formLayout.addRow(label,label2)
         else:
             if sig==0:
                 a=sender.x()
