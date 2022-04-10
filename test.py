@@ -1,1 +1,0 @@
-n = [[row[i] for row in nx] for i in range(len(nx[0]))]

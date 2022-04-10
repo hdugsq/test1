@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
 from sklearn.neural_network import MLPClassifier
 from sklearn.decomposition import PCA
-from sklearn import svm
+from sklearn import manifold, random_projection, svm
 from sklearn.neighbors import KNeighborsClassifier
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 class XB():
@@ -189,8 +189,8 @@ class MLP():
         b=clf.predict(pr)
         print(b)
 class HB():
-    sig=['pca(y/n)']
-    set=['y']
+    sig=['pca/tsne/RP']
+    set=['pca']
     mdata=[]
     ndata=[]
     r=''
@@ -206,8 +206,13 @@ class HB():
         for i in range(len(a[0])):
             for j in range(len(a[0][0])):
                 b.append(a[:,i][:,j])
-        pca=PCA(n_components=1)
-        nx=pca.fit_transform(b)
+        if self.set[0]=='pca':
+            DR=PCA(n_components=1)
+        elif self.set[0]=='tsne':
+            DR=manifold.TSNE(n_components=1)
+        else:
+            DR=random_projection.SparseRandomProjection(n_components=1,random_state=42)
+        nx=DR.fit_transform(b)
         c=[]
         d=[]
         for i in range(len(nx)):

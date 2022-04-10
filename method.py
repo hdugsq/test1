@@ -2,6 +2,8 @@ from numpy.lib.arraysetops import _setxor1d_dispatcher
 import pywt
 import codecs
 import random
+from sklearn import manifold
+from sklearn import random_projection
 import scipy.fft as fft
 import matplotlib.pyplot as plt
 import matplotlib
@@ -21,9 +23,11 @@ from sklearn.decomposition import PCA
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
+from sklearn.cluster import KMeans
 from sklearn import svm
 import csv
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from sqlalchemy import false
 route=""
 r3=[]
 def Savecsv(name,data):
@@ -48,7 +52,7 @@ class window3(QDialog):
         self.setWindowOpacity(0.90)
         self.pushButton_2.setStyleSheet("QPushButton{color:black}"
                                   "QPushButton:hover{color:red}"
-                                  "QPushButton{background-color:rgb(78,255,255)}"
+                                  "QPushButton{background-color:rgb(78,2150,2150)}"
                                   "QPushButton{border:2px}"
                                   "QPushButton{border-radius:10px}"
                                   "QPushButton{padding:2px 4px}")
@@ -69,7 +73,8 @@ class WJ(QPushButton):
             self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def do(self):
         global route
         b=time.strftime("%Y-%m-%d_%H-%M-%S_", time.localtime())
@@ -115,7 +120,8 @@ class TD(QPushButton):
             self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def do(self):
         global route,r3
         r3=self.r3
@@ -145,7 +151,8 @@ class XB(QPushButton):
                 self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def do(self):
         w = pywt.Wavelet(self.set[0])
         x = copy.deepcopy(self.mdata)
@@ -156,11 +163,16 @@ class XB(QPushButton):
                 coeffs[j] = pywt.threshold(coeffs[j], 0.04*max(coeffs[j]))
             x[i] = pywt.waverec(coeffs, self.set[0])
         self.mdata=x
+        Savecsv(route+"/"+'xb.csv',[[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))])
     def play(self):
-        for i in range(len(self.mdata)):
-            plt.subplot(len(self.mdata),1,i+1)
-            plt.plot(self.mdata[i])
-        plt.show()
+        neww=dwin()
+        neww.figure.clear()
+        neww.canvas.clear()
+        neww.ax.clear()
+        for i in range(neww.formLayout.count()):
+            neww.formLayout.itemAt(i).widget().deleteLater()
+        neww.data=self.mdata
+        neww.show()
     def setwin(self):
         win3=window3()
         def aa():
@@ -203,7 +215,8 @@ class FFT(QPushButton):
                 self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def do(self):
         x = copy.deepcopy(self.mdata)
         for i in range(len(self.mdata)):
@@ -213,6 +226,7 @@ class FFT(QPushButton):
             elif self.set[0]=='相位':
                 x[i]=np.angle(complex_array)
         self.mdata=x
+        Savecsv(route+"/"+'fft.csv',[[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))])
     def play(self):
         for i in range(len(self.mdata)):
             plt.subplot(len(self.mdata),1,i+1)
@@ -261,7 +275,8 @@ class SVm(QPushButton):
                 self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def do(self):
         pr=[]
         label = pd.read_csv(self.r)
@@ -334,7 +349,8 @@ class GLP(QPushButton):
                 self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def do(self):
         x = copy.deepcopy(self.mdata)
         if self.set[0]=='间接法':
@@ -350,11 +366,20 @@ class GLP(QPushButton):
                 pows=np.abs(complex_array)
                 x[i]=pows**2/len(self.mdata[i])
         self.mdata=x
+        Savecsv(route+"/"+'glp.csv',[[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))])
     def play(self):
-        for i in range(len(self.mdata)):
-            plt.subplot(len(self.mdata),1,i+1)
-            plt.plot(20*np.log10(self.mdata[i][:len(self.mdata[i])//2]),'b')
-        plt.show()
+        neww=dwin()
+        neww.figure.clear()
+        neww.canvas.clear()
+        neww.ax.clear()
+        for i in range(neww.formLayout.count()):
+            neww.formLayout.itemAt(i).widget().deleteLater()
+        neww.data=20*np.log10(self.mdata[:][:])
+        neww.show()
+        # for i in range(len(self.mdata)):
+        #     plt.subplot(len(self.mdata),1,i+1)
+        #     plt.plot(20*np.log10(self.mdata[i][:len(self.mdata[i])//2]),'b')
+        # plt.show()
     def setwin(self):
         win3=window3()
         def aa():
@@ -397,7 +422,8 @@ class LvB(QPushButton):
                 self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def do(self):
         x = copy.deepcopy(self.mdata)
         try:
@@ -419,11 +445,20 @@ class LvB(QPushButton):
         else:
             b,a = signal.butter(1, [low,high], 'bandpass')
         self.mdata = signal.filtfilt(b, a, x[0:])
+        Savecsv(route+"/"+'lvb.csv',[[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))])
     def play(self):
-        for i in range(len(self.mdata)):
-            plt.subplot(len(self.mdata),1,i+1)
-            plt.plot(self.mdata[i],'b')
-        plt.show()
+        neww=dwin()
+        neww.figure.clear()
+        neww.canvas.clear()
+        neww.ax.clear()
+        for i in range(neww.formLayout.count()):
+            neww.formLayout.itemAt(i).widget().deleteLater()
+        neww.data=self.mdata
+        neww.show()
+        # for i in range(len(self.mdata)):
+        #     plt.subplot(len(self.mdata),1,i+1)
+        #     plt.plot(self.mdata[i],'b')
+        # plt.show()
     def setwin(self):
         win3=window3()
         def aa():
@@ -471,7 +506,8 @@ class DPP(QPushButton):
                 self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def do(self):
         x = copy.deepcopy(self.mdata)
         for i in range(len(self.mdata)):
@@ -480,11 +516,20 @@ class DPP(QPushButton):
             x[i]=fft.ifft(x[i])
             x[i]=x[i].real
         self.mdata=x
+        Savecsv(route+"/"+'dpp.csv',[[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))])
     def play(self):
-        for i in range(len(self.mdata)):
-            plt.subplot(len(self.mdata),1,i+1)
-            plt.plot(self.mdata[i],'b')
-        plt.show()
+        neww=dwin()
+        neww.figure.clear()
+        neww.canvas.clear()
+        neww.ax.clear()
+        for i in range(neww.formLayout.count()):
+            neww.formLayout.itemAt(i).widget().deleteLater()
+        neww.data=self.mdata
+        neww.show()
+        # for i in range(len(self.mdata)):
+        #     plt.subplot(len(self.mdata),1,i+1)
+        #     plt.plot(self.mdata[i],'b')
+        # plt.show()
     def setwin(self):
         win3=window3()
         def aa():
@@ -528,7 +573,8 @@ class KNN(QPushButton):
                 self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def do(self):
         pr=[]
         label = pd.read_csv(self.r)
@@ -636,7 +682,8 @@ class MLP(QPushButton):
                 self.setwin()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def do(self):
         pr=[]
         label = pd.read_csv(self.r)
@@ -695,8 +742,8 @@ class MLP(QPushButton):
             f.write('\nmlp'+str(self.ch)+'.do()')
 class HB(QPushButton):
     name='合并输入'
-    sig=['pca(y/n)']
-    set=['y']
+    sig=['pca/tsne/RP']
+    set=['pca']
     mdata=[]
     ndata=[]
     sign=0
@@ -712,7 +759,8 @@ class HB(QPushButton):
                 self.setwin()
     def __init__(self, title, parent):
         super().__init__(title, parent)
-        self.setStyleSheet("background-color: rgb(203, 248, 235)")
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
     def init(self):
         ddata=copy.deepcopy(self.mdata)
         ddata = [[row[i] for row in ddata] for i in range(len(ddata[0]))]
@@ -723,8 +771,13 @@ class HB(QPushButton):
         for i in range(len(a[0])):
             for j in range(len(a[0][0])):
                 b.append(a[:,i][:,j])
-        pca=PCA(n_components=1)
-        nx=pca.fit_transform(b)
+        if self.set[0]=='pca':
+            DR=PCA(n_components=1)
+        elif self.set[0]=='tsne':
+            DR=manifold.TSNE(n_components=1)
+        else:
+            DR=random_projection.SparseRandomProjection(n_components=1,random_state=42)
+        nx=DR.fit_transform(b)
         c=[]
         d=[]
         for i in range(len(nx)):
@@ -737,6 +790,7 @@ class HB(QPushButton):
         d.append(c)
         d= [[row[i] for row in d] for i in range(len(d[0]))]
         self.mdata=d
+        Savecsv(route+"/"+'hb.csv',[[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))])
     def setwin(self):
         win3=window3()
         def aa():
@@ -775,6 +829,32 @@ def showtime(ax,canvas,x):
     canvas.draw()
     canvas.update()
     canvas.flush_events()
+class dwin(QDialog):
+    figure=[]
+    canvas=[]
+    ax=[]
+    data=[]
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_u()
+        self.pushButton.clicked.connect(self.init)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(lambda:self.do())
+    def init(self):
+        for i in range(len(r3)):
+            self.figure.append(plt.figure())
+            self.canvas.append(FigureCanvas(self.figure[i]))
+            self.formLayout.addRow(r3[i],self.canvas[i])
+            self.canvas[i].setMaximumSize(1000,60)
+            self.ax.append(self.figure[i].add_axes([0, 0.1, 1, 0.8]))
+            self.ax[i].axis('off')
+        for i in range(len(r3)):
+            self.ax[i].plot(self.data[i],'b')
+            self.canvas[i].draw()
+    def do(self):
+        None
+    def set_u(self):
+        loadUi(r'untitled3.ui', self)
 class win(QDialog):
     t=-20
     r=''
@@ -821,3 +901,106 @@ class win(QDialog):
         self.timer.start((200))
     def set_u(self):
         loadUi(r'untitled2.ui', self)
+class Kmeans(QPushButton):
+    name='Kmeans聚类'
+    sig=['tr_s','tr_e','pr_s','pr_e','n_clusters']
+    set=[0,300,311,324,3]
+    mdata=[]
+    r=''
+    ch=0
+    b=[]
+    rightClicked = pyqtSignal()
+    def mousePressEvent(self, evt):
+        super().mousePressEvent(evt)
+        if evt.button()==Qt.RightButton:
+            self.rightClicked.emit()
+            if len(self.mdata)==0:
+                self.setwin()
+            else:
+                self.play()
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.setFixedWidth(135)
+        self.setStyleSheet("background-color: #000000")
+        self.sig=['tr_s','tr_e','pr_s','pr_e','n_clusters']
+        self.set=[0,300,311,324,3]
+        self.mdata=[]
+        self.b=[]
+    def do(self):
+        pr=[]
+        label = pd.read_csv(self.r)
+        nx = copy.deepcopy(self.mdata)
+        nx = [[row[i] for row in nx] for i in range(len(nx[0]))]
+        self.set[1]=len(label.values)
+        x = np.array(nx[self.set[0]:self.set[1]])
+        for i in range(self.set[2],self.set[3]):
+            pr.append(nx[i])
+        scaler = StandardScaler()
+        X_train_std = scaler.fit_transform(x)
+        pr = scaler.transform(pr)
+        clf  = KMeans(n_clusters=self.set[4], random_state=9)
+        train=clf.fit_predict(X_train_std)
+        pr=clf.predict(pr)
+    def play(self):
+        label = pd.read_csv(self.r)
+        nx = copy.deepcopy(self.mdata)
+        nx = [[row[i] for row in nx] for i in range(len(nx[0]))]
+        pca=PCA(n_components=2)
+        nx=pca.fit_transform(nx)
+        x = np.array(nx[:])
+        pca=PCA(n_components=2)
+        scaler = StandardScaler()
+        X_train_std = scaler.fit_transform(x)
+        clf  = KMeans(n_clusters=self.set[4], random_state=9)
+        x_p1 = clf.fit_predict(X_train_std)
+        x1_min, x1_max=X_train_std[:,0].min(), X_train_std[:,0].max() #第0维特征的范围
+        x2_min, x2_max=X_train_std[:,1].min(), X_train_std[:,1].max() #第1维特征的范围
+        x1,x2=np.mgrid[x1_min:x1_max:800j, x2_min:x2_max:800j ] #生成网络采样点
+        grid_test=np.stack((x1.flat,x2.flat) ,axis=1) #测试点
+        grid_hat = clf.predict(grid_test)       # 预测分类值
+        grid_hat = grid_hat.reshape(x1.shape)  # 使之与输入的形状相同
+        matplotlib.rcParams['font.sans-serif']=['SimHei']
+        cm_light=matplotlib.colors.ListedColormap(['#A0FFA0', '#FFA0A0', '#A0A0FF','#FFFFCC'])
+        cm_dark=matplotlib.colors.ListedColormap(['g','r','b','y'])
+        plt.pcolormesh(x1, x2, grid_hat, cmap=cm_light)     # 预测值的显示
+        plt.scatter(X_train_std[:, 0], X_train_std[:, 1], c=x_p1, s=30,cmap=cm_dark)  # 样本
+        plt.xlabel('5', fontsize=13)
+        plt.ylabel('6', fontsize=13)
+        plt.xlim(x1_min,x1_max)
+        plt.ylim(x2_min,x2_max)
+        plt.title('特征分类')
+        plt.show()
+    def setwin(self):
+        al=pd.read_csv(self.r)
+        al=np.array(al).tolist()
+        lena=len(al)
+        win3=window3()
+        def aa():
+            for i in range(len(self.sig)):
+                self.set[i]=int(win3.formLayout.itemAt(i,1).widget().value())
+        for i in range(len(self.sig)):
+            label=QLabel(self.sig[i])
+            line=QSpinBox()
+            line.setMinimum(0)
+            line.setMaximum(lena)
+            line.setValue(self.set[i])
+            win3.formLayout.addRow(label,line)
+        win3.show()
+        win3.pushButton_2.clicked.connect(aa)
+        win3.pushButton_2.clicked.connect(win3.close)
+    def totxt1(self):
+        pass
+    def totxt2(self):
+        with codecs.open('data.txt','a','utf-8') as f:
+            f.write('\nkmeans'+str(self.ch)+'=Kmeans()')
+            f.write('\nkmeans'+str(self.ch)+'.r=r')
+            f.write('\nkmeans'+str(self.ch)+'.mdata=mydata')
+            f.write('\nkmeans'+str(self.ch)+'.mset([')
+            for i in range(len(self.set)-1):
+                if type(self.set[i])==type(1):
+                    f.write(str(self.set[i])+',')
+                else:
+                    f.write('\''+self.set[i]+'\',')
+            f.write(str(self.set[len(self.set)-1])+'])')
+            f.write('\nkmeans'+str(self.ch)+'.do()')
+            f.write('\ndpp'+str(self.ch)+'.do()')

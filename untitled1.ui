@@ -30,65 +30,6 @@ color: rgb(255, 255, 255);</string>
     <string notr="true">background-color: rgb(54, 54, 54);</string>
    </property>
   </widget>
-  <widget class="QScrollArea" name="scrollArea">
-   <property name="geometry">
-    <rect>
-     <x>1310</x>
-     <y>80</y>
-     <width>341</width>
-     <height>931</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>0</width>
-     <height>0</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>16777215</width>
-     <height>16777215</height>
-    </size>
-   </property>
-   <property name="autoFillBackground">
-    <bool>true</bool>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-color: rgb(54, 54, 54);
-gridline-color: rgb(55, 55, 55);</string>
-   </property>
-   <property name="widgetResizable">
-    <bool>true</bool>
-   </property>
-   <widget class="QWidget" name="scrollAreaWidgetContents">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>2100</width>
-      <height>2100</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>2100</width>
-      <height>2100</height>
-     </size>
-    </property>
-    <widget class="QWidget" name="formLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>50</y>
-       <width>2391</width>
-       <height>2111</height>
-      </rect>
-     </property>
-     <layout class="QFormLayout" name="formLayout"/>
-    </widget>
-   </widget>
-  </widget>
   <widget class="QWidget" name="widget" native="true">
    <property name="geometry">
     <rect>
@@ -161,11 +102,69 @@ border radius:30px;</string>
     </property>
    </widget>
   </widget>
+  <widget class="QTableWidget" name="tableWidget">
+   <property name="geometry">
+    <rect>
+     <x>1230</x>
+     <y>210</y>
+     <width>401</width>
+     <height>791</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border-color: rgb(255, 255, 255);
+color: rgb(0, 0, 0);
+border-color: rgb(0, 0, 0);
+gridline-color: rgb(0, 0, 0);
+
+</string>
+   </property>
+   <property name="verticalScrollBarPolicy">
+    <enum>Qt::ScrollBarAsNeeded</enum>
+   </property>
+   <property name="horizontalScrollBarPolicy">
+    <enum>Qt::ScrollBarAlwaysOff</enum>
+   </property>
+   <property name="editTriggers">
+    <set>QAbstractItemView::DoubleClicked</set>
+   </property>
+   <attribute name="horizontalHeaderVisible">
+    <bool>false</bool>
+   </attribute>
+   <attribute name="verticalHeaderVisible">
+    <bool>false</bool>
+   </attribute>
+   <row>
+    <property name="text">
+     <string>新建行</string>
+    </property>
+   </row>
+   <column>
+    <property name="text">
+     <string>新建列</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>新建列</string>
+    </property>
+   </column>
+   <item row="0" column="0">
+    <property name="text">
+     <string>信息栏</string>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+     </font>
+    </property>
+   </item>
+  </widget>
   <widget class="QPushButton" name="pushButton_3">
    <property name="geometry">
     <rect>
-     <x>240</x>
-     <y>930</y>
+     <x>1280</x>
+     <y>100</y>
      <width>161</width>
      <height>80</height>
     </rect>
