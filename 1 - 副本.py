@@ -32,6 +32,7 @@ def getdata():
         for j in range(len(r3)):
             data[j].append(mydata[j][i][0])
     mydata=data
+    
 class Button(QPushButton):
     def __init__(self, title, parent):
         super().__init__(title, parent)
