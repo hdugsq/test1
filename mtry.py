@@ -49,8 +49,8 @@ class FFT():
                 x[i]=np.angle(complex_array)
         self.mdata=x
 class SVm():
-    sig=['tr_s','tr_e','pr_s','pr_e']
-    set=[100,400,410,428]
+    sig=['tr_n','pr_n']
+    set=[400,50]
     mdata=[]
     r=''
     def mset(self,a):
@@ -59,11 +59,13 @@ class SVm():
         pr=[]
         label = pd.read_csv(self.r)
         a=len(self.mdata)
+        shuffed_indexes=np.random.permutation(len(label['bq']))
+        train_indexes=shuffed_indexes[:self.set[0]]
+        test_indexes=shuffed_indexes[self.set[0]:self.set[0]+self.set[1]]
         self.mdata = [[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))]
-        x = np.array(self.mdata[self.set[0]:self.set[1]])
-        y = label['bq'].values[self.set[0]:self.set[1]]
-        for i in range(self.set[2],self.set[3]):
-            pr.append(self.mdata[i])
+        x = np.array(self.mdata)[train_indexes]
+        y = label['bq'].values[train_indexes]
+        pr=np.array(self.mdata)[test_indexes]
         scaler = StandardScaler()
         X_train_std = scaler.fit_transform(x)
         pr=scaler.transform(pr)
@@ -72,7 +74,13 @@ class SVm():
         clf = GridSearchCV(svm.SVC(kernel= 'rbf',class_weight='balanced',tol=0.01,probability=True),param_grid,cv=10)
         clf = clf.fit(X_train_std,y.ravel())
         b=clf.predict(pr)
+        per=0
+        for i in range(len(b)):
+            if b[i]==label['bq'].values[test_indexes[i]]:
+                per=per+1
+        self.per=per/len(b)
         print(b)
+        print(self.per)
 class GLP():
     sig=['间接法/直接法']
     set=['间接法']
@@ -139,8 +147,8 @@ class DPP():
             x[i]=x[i].real
         self.mdata=x
 class KNN():
-    sig=['tr_s','tr_e','pr_s','pr_e','n_neighbors']
-    set=[0,300,311,324,3]
+    sig=['tr_n','pr_n','n_neighbors']
+    set=[400,50,3]
     mdata=[]
     r=''
     def mset(self,a):
@@ -148,21 +156,29 @@ class KNN():
     def do(self):
         pr=[]
         label = pd.read_csv(self.r)
+        shuffed_indexes=np.random.permutation(len(label['bq']))
+        train_indexes=shuffed_indexes[:self.set[0]]
+        test_indexes=shuffed_indexes[self.set[0]:self.set[0]+self.set[1]]
         self.mdata = [[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))]
-        x = np.array(self.mdata[self.set[0]:self.set[1]])
-        y = label['bq'].values[self.set[0]:self.set[1]]
-        for i in range(self.set[2],self.set[3]):
-            pr.append(self.mdata[i])
+        x = np.array(self.mdata)[train_indexes]
+        y = label['bq'].values[train_indexes]
+        pr=np.array(self.mdata)[test_indexes]
         scaler = StandardScaler()
         X_train_std = scaler.fit_transform(x)
         pr=scaler.transform(pr)
-        clf = KNeighborsClassifier(n_neighbors=self.set[4],algorithm='auto',weights='distance')
+        clf = KNeighborsClassifier(n_neighbors=self.set[2],algorithm='auto',weights='distance')
         clf = clf.fit(X_train_std,y.ravel())
         b=clf.predict(pr)
+        per=0
+        for i in range(len(b)):
+            if b[i]==label['bq'].values[test_indexes[i]]:
+                per=per+1
+        self.per=per/len(b)
         print(b)
+        print(self.per)
 class MLP():
-    sig=['tr_s','tr_e','pr_s','pr_e']
-    set=[0,300,311,324]
+    sig=['tr_n','pr_n']
+    set=[400,50]
     mdata=[]
     r=''
     def mset(self,a):
@@ -170,11 +186,13 @@ class MLP():
     def do(self):
         pr=[]
         label = pd.read_csv(self.r)
+        shuffed_indexes=np.random.permutation(len(label['bq']))
+        train_indexes=shuffed_indexes[:self.set[0]]
+        test_indexes=shuffed_indexes[self.set[0]:self.set[0]+self.set[1]]
         self.mdata = [[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))]
-        x = np.array(self.mdata[self.set[0]:self.set[1]])
-        y = label['bq'].values[self.set[0]:self.set[1]]
-        for i in range(self.set[2],self.set[3]):
-            pr.append(self.mdata[i])
+        x = np.array(self.mdata)[train_indexes]
+        y = label['bq'].values[train_indexes]
+        pr=np.array(self.mdata)[test_indexes]
         scaler = StandardScaler()
         X_train_std = scaler.fit_transform(x)
         pr=scaler.transform(pr)
@@ -186,8 +204,14 @@ class MLP():
             solver='adam', tol=0.0001, validation_fraction=0.1, verbose=False,
             warm_start=False)
         clf = clf.fit(X_train_std,y.ravel())
+        per=0
         b=clf.predict(pr)
+        for i in range(len(b)):
+            if b[i]==label['bq'].values[test_indexes[i]]:
+                per=per+1
+        self.per=per/len(b)
         print(b)
+        print(self.per)
 class HB():
     sig=['pca/tsne/RP']
     set=['pca']

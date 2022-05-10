@@ -134,7 +134,7 @@ color: rgb(202, 202, 202);</string>
      <number>1</number>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;脑电处理&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;EEG&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="scaledContents">
      <bool>false</bool>
@@ -165,9 +165,9 @@ border radius:30px;</string>
    <property name="geometry">
     <rect>
      <x>240</x>
-     <y>930</y>
-     <width>161</width>
-     <height>80</height>
+     <y>909</y>
+     <width>301</width>
+     <height>101</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -175,7 +175,7 @@ border radius:30px;</string>
 color: rgb(0, 0, 0);</string>
    </property>
    <property name="text">
-    <string>取消此次连线</string>
+    <string>Cancel this connection</string>
    </property>
   </widget>
  </widget>

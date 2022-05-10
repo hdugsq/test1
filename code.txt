@@ -32,6 +32,7 @@ knn1.r=r
 knn1.mdata=mydata
 knn1.mset([400,50,3])
 knn1.do()
+dpp1.do()
 mydata=fFt1.mdata
 mlp1=MLP()
 mlp1.r=r
@@ -50,6 +51,7 @@ knn1.r=r
 knn1.mdata=mydata
 knn1.mset([400,50,3])
 knn1.do()
+dpp1.do()
 mydata=fFt1.mdata
 mlp1=MLP()
 mlp1.r=r

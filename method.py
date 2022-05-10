@@ -1,7 +1,7 @@
 from numpy.lib.arraysetops import _setxor1d_dispatcher
 import pywt
 import codecs
-import random
+from sklearn.decomposition import FastICA 
 from sklearn import manifold
 from sklearn import random_projection
 import scipy.fft as fft
@@ -12,8 +12,9 @@ import pandas as pd
 import copy
 import os
 import time
+import umap
 from scipy import signal
-from PyQt5.QtGui import QDrag,QPainter,QPen,QColor,QIcon
+from PyQt5.QtGui import QIcon
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QSpinBox
 from PyQt5.QtCore import QTimer, pyqtSignal,Qt
@@ -50,7 +51,7 @@ class window3(QDialog):
         self.set_u()
         self.setWindowIcon(QIcon(r"C:\Users\qq\Pictures\src=http___pic.51yuansu.com_pic3_cover_03_06_80_5b35d9015cba3_610.jpg&refer=http___pic.51yuansu.jfif"))
         self.setWindowOpacity(0.90)
-        self.pushButton_2.setStyleSheet("QPushButton{color:black}"
+        self.pushButton_2.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton:hover{color:red}"
                                   "QPushButton{background-color:rgb(78,2150,2150)}"
                                   "QPushButton{border:2px}"
@@ -82,7 +83,6 @@ class WJ(QPushButton):
         route=b+self.r.rsplit("/")[-1][:-4]
         os.makedirs(a+'\\'+route)
     def play(self):
-        # 韩东根写的代码
         self.win3=window3()
         
         try:
@@ -128,11 +128,19 @@ class TD(QPushButton):
         nx=[[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))]
         Savecsv(route+"/"+'td.csv',nx)
     def play(self):
-        print(len(self.mdata))
-        for i in range(len(self.mdata)):
-            plt.subplot(len(self.mdata),1,i+1)
-            plt.plot(self.mdata[i])
-        plt.show()
+        neww=dwin()
+        neww.figure.clear()
+        neww.canvas.clear()
+        neww.ax.clear()
+        for i in range(neww.formLayout.count()):
+            neww.formLayout.itemAt(i).widget().deleteLater()
+        neww.data=self.mdata
+        neww.show()
+        # print(len(self.mdata))
+        # for i in range(len(self.mdata)):
+        #     plt.subplot(len(self.mdata),1,i+1)
+        #     plt.plot(self.mdata[i])
+        # plt.show()
 class XB(QPushButton):
     name='小波去噪'
     sig=['小波基']
@@ -154,7 +162,10 @@ class XB(QPushButton):
         self.setFixedWidth(135)
         self.setStyleSheet("background-color: #000000")
     def do(self):
-        w = pywt.Wavelet(self.set[0])
+        try:
+            w = pywt.Wavelet(self.set[0])
+        except ValueError:
+            w= pywt.Wavelet('db8')
         x = copy.deepcopy(self.mdata)
         for i in range(len(self.mdata)):
             maxlev = pywt.dwt_max_level(len(self.mdata[i]), w.dec_len)
@@ -186,10 +197,10 @@ class XB(QPushButton):
         win3.pushButton_2.clicked.connect(aa)
         win3.pushButton_2.clicked.connect(win3.close)
     def totxt1(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nmydata=xb'+str(self.ch)+'.mdata')
     def totxt2(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nxb'+str(self.ch)+'=XB()')
             f.write('\nxb'+str(self.ch)+'.mdata=mydata')
             f.write('\nxb'+str(self.ch)+'.mset([')
@@ -220,18 +231,27 @@ class FFT(QPushButton):
     def do(self):
         x = copy.deepcopy(self.mdata)
         for i in range(len(self.mdata)):
-            complex_array =fft.fft(self.mdata[i],len(self.mdata[i]))
-            if self.set[0]=='振幅':
-                x[i]=np.abs(complex_array)
-            elif self.set[0]=='相位':
+            L = len (self.mdata[i])                          # 信号长度
+            complex_array =fft.fft(self.mdata[i],L)
+            if self.set[0]=='相位':
                 x[i]=np.angle(complex_array)
+            else:
+                x[i]=np.abs(complex_array)
         self.mdata=x
         Savecsv(route+"/"+'fft.csv',[[row[i] for row in self.mdata] for i in range(len(self.mdata[0]))])
     def play(self):
-        for i in range(len(self.mdata)):
-            plt.subplot(len(self.mdata),1,i+1)
-            plt.plot(self.mdata[i])
-        plt.show()
+        neww=dwin()
+        neww.figure.clear()
+        neww.canvas.clear()
+        neww.ax.clear()
+        for i in range(neww.formLayout.count()):
+            neww.formLayout.itemAt(i).widget().deleteLater()
+        neww.data=self.mdata
+        neww.show()
+        # for i in range(len(self.mdata)):
+        #     plt.subplot(len(self.mdata),1,i+1)
+        #     plt.plot(self.mdata[i])
+        # plt.show()
     def setwin(self):
         win3=window3()
         def aa():
@@ -245,10 +265,10 @@ class FFT(QPushButton):
         win3.pushButton_2.clicked.connect(aa)
         win3.pushButton_2.clicked.connect(win3.close)
     def totxt1(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nmydata=fFt'+str(self.ch)+'.mdata')
     def totxt2(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nfFt'+str(self.ch)+'=FFT()')
             f.write('\nfFt'+str(self.ch)+'.mdata=mydata')
             f.write('\nfFt'+str(self.ch)+'.mset([')
@@ -257,12 +277,13 @@ class FFT(QPushButton):
             f.write('\''+self.set[len(self.set)-1]+'\'])')
             f.write('\nfFt'+str(self.ch)+'.do()')
 class SVm(QPushButton):
-    name='svm分类'
-    sig=['tr_s','tr_e','pr_s','pr_e']
-    set=[0,300,311,324]
+    name='svm'
+    sig=['tr_n','pr_n']
+    set=[400,50]
     mdata=[]
     r=''
     ch=0
+    per=0
     b=[]
     rightClicked = pyqtSignal()
     def mousePressEvent(self, evt):
@@ -272,7 +293,8 @@ class SVm(QPushButton):
             if len(self.mdata)==0:
                 self.setwin()
             else:
-                self.play()
+                pass
+                #self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.setFixedWidth(135)
@@ -282,24 +304,31 @@ class SVm(QPushButton):
         label = pd.read_csv(self.r)
         a=len(self.mdata)
         nx = copy.deepcopy(self.mdata)
+        shuffed_indexes=np.random.permutation(len(label['bq']))
+        train_indexes=shuffed_indexes[:self.set[0]]
+        test_indexes=shuffed_indexes[self.set[0]:self.set[0]+self.set[1]]
         nx = [[row[i] for row in nx] for i in range(len(nx[0]))]
-        x = np.array(nx[self.set[0]:self.set[1]])
-        y = label['bq'].values[self.set[0]:self.set[1]]
-        for i in range(self.set[2],self.set[3]):
-            pr.append(nx[i])
+        x = np.array(nx)[train_indexes]
+        y = label['bq'].values[train_indexes]
+        pr=np.array(nx)[test_indexes]
         scaler = StandardScaler()
         X_train_std = scaler.fit_transform(x)
         pr = scaler.transform(pr)
         param_grid = {'C':[1e1,1e2,1e3, 5e3,1e4,5e4],
                     'gamma':[0.0001,0.0008,0.0005,0.008,0.005,]}
-        clf = GridSearchCV(svm.SVC(kernel= 'rbf',class_weight='balanced',tol=0.01,probability=True),param_grid,cv=10)
+        clf = svm.SVC(kernel= 'rbf',class_weight='balanced',tol=0.01,probability=True)
         clf = clf.fit(X_train_std,y.ravel())
         self.b=clf.predict(pr)
-        print(self.b)
+        per=0
+        for i in range(len(self.b)):
+            if self.b[i]==label['bq'].values[test_indexes[i]]:
+                per=per+1
+        self.per=per/len(self.b)
     def setwin(self):
         al=pd.read_csv(self.r)
         al=np.array(al).tolist()
         lena=len(al)
+        ttmp=[]
         win3=window3()
         def aa():
             for i in range(len(self.sig)):
@@ -310,16 +339,24 @@ class SVm(QPushButton):
             line.setMinimum(0)
             line.setMaximum(lena)
             line.setValue(self.set[i])
+            if i==0:
+                ttmp.append(line)
+            if i==1:
+                ttmp.append(line)
+                line.setMaximum(lena-ttmp[0].value())
             win3.formLayout.addRow(label,line)
         win3.show()
+        ttmp[0].valueChanged.connect(lambda:self.change_table(ttmp,lena))
         win3.pushButton_2.clicked.connect(aa)
         win3.pushButton_2.clicked.connect(win3.close)
+    def change_table(self,ttmp,lena):
+        ttmp[1].setMaximum(lena-ttmp[0].value())
     def play(self):
         pass
     def totxt1(self):
         pass
     def totxt2(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nsvm'+str(self.ch)+'=SVm()')
             f.write('\nsvm'+str(self.ch)+'.r=r')
             f.write('\nsvm'+str(self.ch)+'.mdata=mydata')
@@ -334,7 +371,7 @@ class SVm(QPushButton):
 class GLP(QPushButton):
     name='功率谱'
     sig=['间接法/直接法']
-    set=['间接法']
+    set=['直接法']
     mdata=[]
     r=''
     ch=0
@@ -356,13 +393,14 @@ class GLP(QPushButton):
         if self.set[0]=='间接法':
             for i in range(len(self.mdata)):
                 a=np.correlate(self.mdata[i],self.mdata[i],'same')
-                num=len(a)
-                a=fft.fft(a,num)
+                L = len (a)                          # 信号长度
+                a=fft.fft(a,L)
                 pows=np.abs(a)
                 x[i]=pows/np.max(pows)
-        elif self.set[0]=='直接法':
+        else:
             for i in range(len(self.mdata)):
-                complex_array =fft.fft(self.mdata[i],len(self.mdata[i]))
+                L = len (self.mdata[i])                          # 信号长度
+                complex_array =fft.fft(self.mdata[i],L)
                 pows=np.abs(complex_array)
                 x[i]=pows**2/len(self.mdata[i])
         self.mdata=x
@@ -393,10 +431,10 @@ class GLP(QPushButton):
         win3.pushButton_2.clicked.connect(aa)
         win3.pushButton_2.clicked.connect(win3.close)
     def totxt1(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nmydata=glp'+str(self.ch)+'.mdata')
     def totxt2(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nglp'+str(self.ch)+'=GLP()')
             f.write('\nglp'+str(self.ch)+'.mdata=mydata')
             f.write('\nglp'+str(self.ch)+'.mset([')
@@ -407,7 +445,7 @@ class GLP(QPushButton):
 class LvB(QPushButton):
     name='滤波'
     sig=["滤波方式","low","high"]
-    set=["低通",0.3,3]
+    set=["带通",0.3,3]
     mdata=[]
     r=''
     ch=0
@@ -442,6 +480,8 @@ class LvB(QPushButton):
             b, a = signal.butter(1, high, 'lowpass')
         elif self.set[0]=='高通':
             b,a = signal.butter(1, low, 'highpass')
+        elif self.set[0]=='带阻':
+            b,a = signal.butter(1, [low,high], 'bandstop')
         else:
             b,a = signal.butter(1, [low,high], 'bandpass')
         self.mdata = signal.filtfilt(b, a, x[0:])
@@ -474,10 +514,10 @@ class LvB(QPushButton):
         win3.pushButton_2.clicked.connect(aa)
         win3.pushButton_2.clicked.connect(win3.close)
     def totxt1(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nmydata=lvb'+str(self.ch)+'.mdata')
     def totxt2(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nlvb'+str(self.ch)+'=LvB()')
             f.write('\nlvb'+str(self.ch)+'.mdata=mydata')
             f.write('\nlvb'+str(self.ch)+'.mset([')
@@ -511,7 +551,10 @@ class DPP(QPushButton):
     def do(self):
         x = copy.deepcopy(self.mdata)
         for i in range(len(self.mdata)):
-            x[i] =fft.fft(x[i])
+            a=np.correlate(self.mdata[i],self.mdata[i],'same')
+            L = len (a)
+            a=fft.fft(a,L)
+            x[i]=np.abs(a)
             x[i]=np.log(np.abs(x[i]))
             x[i]=fft.ifft(x[i])
             x[i]=x[i].real
@@ -543,10 +586,10 @@ class DPP(QPushButton):
         win3.pushButton_2.clicked.connect(aa)
         win3.pushButton_2.clicked.connect(win3.close)
     def totxt1(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nmydata=dpp'+str(self.ch)+'.mdata')
     def totxt2(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\ndpp'+str(self.ch)+'=DPP()')
             f.write('\ndpp'+str(self.ch)+'.mdata=mydata')
             f.write('\ndpp'+str(self.ch)+'.mset([')
@@ -556,11 +599,12 @@ class DPP(QPushButton):
             f.write('\ndpp'+str(self.ch)+'.do()')
 class KNN(QPushButton):
     name='KNN分类'
-    sig=['tr_s','tr_e','pr_s','pr_e','n_neighbors']
-    set=[0,300,311,324,3]
+    sig=['tr_n','pr_n','n_neighbors']
+    set=[400,50,3]
     mdata=[]
     r=''
     ch=0
+    per=0
     b=[]
     rightClicked = pyqtSignal()
     def mousePressEvent(self, evt):
@@ -570,7 +614,8 @@ class KNN(QPushButton):
             if len(self.mdata)==0:
                 self.setwin()
             else:
-                self.play()
+                pass
+                #self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.setFixedWidth(135)
@@ -579,19 +624,24 @@ class KNN(QPushButton):
         pr=[]
         label = pd.read_csv(self.r)
         nx = copy.deepcopy(self.mdata)
+        shuffed_indexes=np.random.permutation(len(label['bq']))
+        train_indexes=shuffed_indexes[:self.set[0]]
+        test_indexes=shuffed_indexes[self.set[0]:self.set[0]+self.set[1]]
         nx = [[row[i] for row in nx] for i in range(len(nx[0]))]
-        self.set[1]=len(label.values)
-        x = np.array(nx[self.set[0]:self.set[1]])
-        y = label['bq'].values[self.set[0]:self.set[1]]
-        for i in range(self.set[2],self.set[3]):
-            pr.append(nx[i])
+        x = np.array(nx)[train_indexes]
+        y = label['bq'].values[train_indexes]
+        pr=np.array(nx)[test_indexes]
         scaler = StandardScaler()
         X_train_std = scaler.fit_transform(x)
         pr = scaler.transform(pr)
-        clf = KNeighborsClassifier(n_neighbors=self.set[4],algorithm='auto',weights='distance')
+        clf = KNeighborsClassifier(n_neighbors=self.set[2],algorithm='auto',weights='distance')
         clf = clf.fit(X_train_std,y.ravel())
         self.b=clf.predict(pr)
-        print(self.b)
+        per=0
+        for i in range(len(self.b)):
+            if self.b[i]==label['bq'].values[test_indexes[i]]:
+                per=per+1
+        self.per=per/len(self.b)
     def play(self):
         pr=[]
         label = pd.read_csv(self.r)
@@ -601,7 +651,6 @@ class KNN(QPushButton):
         nx=pca.fit_transform(nx)
         x = np.array(nx[self.set[0]:self.set[1]])
         y = label['bq'].values[self.set[0]:self.set[1]]
-        print(self.set)
         pca=PCA(n_components=2)
         for i in range(self.set[2],self.set[3]):
             pr.append(copy.deepcopy(nx[i]))
@@ -612,7 +661,6 @@ class KNN(QPushButton):
         clf = KNeighborsClassifier(n_neighbors=self.set[4],algorithm='auto',weights='distance')
         clf = clf.fit(X_train_std,y.ravel())
         self.b=clf.predict(pr2)
-        print(self.b)
         x1_min, x1_max=X_train_std[:,0].min(), X_train_std[:,0].max()/5 #第0维特征的范围
         x2_min, x2_max=X_train_std[:,1].min(), X_train_std[:,1].max() #第1维特征的范围
         x1,x2=np.mgrid[x1_min:x1_max:800j, x2_min:x2_max:800j ] #生成网络采样点
@@ -635,7 +683,11 @@ class KNN(QPushButton):
         al=pd.read_csv(self.r)
         al=np.array(al).tolist()
         lena=len(al)
+        ttmp=[]
         win3=window3()
+        if self.set[0]+self.set[1]>=lena:
+            self.set[0]=lena-20
+            self.set[1]=20
         def aa():
             for i in range(len(self.sig)):
                 self.set[i]=int(win3.formLayout.itemAt(i,1).widget().value())
@@ -645,14 +697,22 @@ class KNN(QPushButton):
             line.setMinimum(0)
             line.setMaximum(lena)
             line.setValue(self.set[i])
+            if i==0:
+                ttmp.append(line)
+            if i==1:
+                ttmp.append(line)
+                line.setMaximum(lena-ttmp[0].value())
             win3.formLayout.addRow(label,line)
         win3.show()
+        ttmp[0].valueChanged.connect(lambda:self.change_table(ttmp,lena))
         win3.pushButton_2.clicked.connect(aa)
         win3.pushButton_2.clicked.connect(win3.close)
+    def change_table(self,ttmp,lena):
+        ttmp[1].setMaximum(lena-ttmp[0].value())
     def totxt1(self):
         pass
     def totxt2(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nknn'+str(self.ch)+'=KNN()')
             f.write('\nknn'+str(self.ch)+'.r=r')
             f.write('\nknn'+str(self.ch)+'.mdata=mydata')
@@ -664,14 +724,14 @@ class KNN(QPushButton):
                     f.write('\''+self.set[i]+'\',')
             f.write(str(self.set[len(self.set)-1])+'])')
             f.write('\nknn'+str(self.ch)+'.do()')
-            f.write('\ndpp'+str(self.ch)+'.do()')
 class MLP(QPushButton):
     name='MLP分类'
-    sig=['tr_s','tr_e','pr_s','pr_e']
-    set=[0,400,211,224]
+    sig=['tr_n','pr_n']
+    set=[400,50]
     mdata=[]
     r=''
     ch=0
+    per=0
     b=[]
     rightClicked = pyqtSignal()
     def mousePressEvent(self, evt):
@@ -688,12 +748,13 @@ class MLP(QPushButton):
         pr=[]
         label = pd.read_csv(self.r)
         nx = copy.deepcopy(self.mdata)
+        shuffed_indexes=np.random.permutation(len(label['bq']))
+        train_indexes=shuffed_indexes[:self.set[0]]
+        test_indexes=shuffed_indexes[self.set[0]:self.set[0]+self.set[1]]
         nx = [[row[i] for row in nx] for i in range(len(nx[0]))]
-        self.set[1]=len(label.values)
-        x = np.array(nx[self.set[0]:self.set[1]])
-        y = label['bq'].values[self.set[0]:self.set[1]]
-        for i in range(self.set[2],self.set[3]):
-            pr.append(nx[i])
+        x = np.array(nx)[train_indexes]
+        y = label['bq'].values[train_indexes]
+        pr=np.array(nx)[test_indexes]
         scaler = StandardScaler()
         X_train_std = scaler.fit_transform(x)
         pr = scaler.transform(pr)
@@ -706,11 +767,16 @@ class MLP(QPushButton):
             warm_start=False)
         clf = clf.fit(X_train_std,y.ravel())
         self.b=clf.predict(pr)
-        print(self.b)
+        per=0
+        for i in range(len(self.b)):
+            if self.b[i]==label['bq'].values[test_indexes[i]]:
+                per=per+1
+        self.per=per/len(self.b)
     def setwin(self):
         al=pd.read_csv(self.r)
         al=np.array(al).tolist()
         lena=len(al)
+        ttmp=[]
         win3=window3()
         def aa():
             for i in range(len(self.sig)):
@@ -721,14 +787,22 @@ class MLP(QPushButton):
             line.setMinimum(0)
             line.setMaximum(lena)
             line.setValue(self.set[i])
+            if i==0:
+                ttmp.append(line)
+            if i==1:
+                ttmp.append(line)
+                line.setMaximum(lena-ttmp[0].value())
             win3.formLayout.addRow(label,line)
         win3.show()
+        ttmp[0].valueChanged.connect(lambda:self.change_table(ttmp,lena))
         win3.pushButton_2.clicked.connect(aa)
         win3.pushButton_2.clicked.connect(win3.close)
+    def change_table(self,ttmp,lena):
+        ttmp[1].setMaximum(lena-ttmp[0].value())
     def totxt1(self):
         pass
     def totxt2(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nmlp'+str(self.ch)+'=MLP()')
             f.write('\nmlp'+str(self.ch)+'.r=r')
             f.write('\nmlp'+str(self.ch)+'.mdata=mydata')
@@ -742,7 +816,7 @@ class MLP(QPushButton):
             f.write('\nmlp'+str(self.ch)+'.do()')
 class HB(QPushButton):
     name='合并输入'
-    sig=['pca/tsne/RP']
+    sig=['pca/tsne/RP/ica']
     set=['pca']
     mdata=[]
     ndata=[]
@@ -775,8 +849,10 @@ class HB(QPushButton):
             DR=PCA(n_components=1)
         elif self.set[0]=='tsne':
             DR=manifold.TSNE(n_components=1)
-        else:
+        elif self.set[0]=='RP':
             DR=random_projection.SparseRandomProjection(n_components=1,random_state=42)
+        else:
+            DR=FastICA(n_components=3, random_state=12)
         nx=DR.fit_transform(b)
         c=[]
         d=[]
@@ -804,11 +880,11 @@ class HB(QPushButton):
         win3.pushButton_2.clicked.connect(aa)
         win3.pushButton_2.clicked.connect(win3.close)
     def totxt1(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nhb'+str(self.ch)+'.do()')
             f.write('\nmydata=hb'+str(self.ch)+'.mdata')
     def totxt2(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             if self.sign==0:
                 f.write('\nhb'+str(self.ch)+'=HB()')
                 f.write('\nhb'+str(self.ch)+'.r=r')
@@ -917,7 +993,8 @@ class Kmeans(QPushButton):
             if len(self.mdata)==0:
                 self.setwin()
             else:
-                self.play()
+                pass
+                #self.play()
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.setFixedWidth(135)
@@ -991,7 +1068,7 @@ class Kmeans(QPushButton):
     def totxt1(self):
         pass
     def totxt2(self):
-        with codecs.open('data.txt','a','utf-8') as f:
+        with codecs.open('code.txt','a','utf-8') as f:
             f.write('\nkmeans'+str(self.ch)+'=Kmeans()')
             f.write('\nkmeans'+str(self.ch)+'.r=r')
             f.write('\nkmeans'+str(self.ch)+'.mdata=mydata')
@@ -1003,4 +1080,3 @@ class Kmeans(QPushButton):
                     f.write('\''+self.set[i]+'\',')
             f.write(str(self.set[len(self.set)-1])+'])')
             f.write('\nkmeans'+str(self.ch)+'.do()')
-            f.write('\ndpp'+str(self.ch)+'.do()')

@@ -1,3 +1,4 @@
+from cmath import nan
 import sys
 from method import *
 from PyQt5.QtWidgets import QDialog, QPushButton, QWidget, QApplication
@@ -20,19 +21,50 @@ dat=[]
 pub=[]
 r=""
 mydata=[]
+err=[]
 def getdata():
-    global r,r3,mydata
+    global r,r3,mydata,err
+    err2=[]
     for i in range(len(r3)):
+        num=0
         data1=pd.read_csv(r,usecols=[r3[i]])
         data1=np.array(data1).tolist()
-        mydata.append(data1)
-    print(mydata)
+        for string in data1:
+            try:
+                string[0]=float(string[0])
+            except:
+                pass
+        for k in data1:
+            if isinstance(k[0],float):
+                if float('-inf') < k[0] < float('inf'):
+                    num=num+1
+        if num/len(data1)>0.7:
+            mydata.append(data1)
+        else:
+            err.append(r3[i])
+    for x in err:
+        r3.remove(x)
     data=[[]for j in range(len(r3))]
     for i in range(len(mydata[0])):
         for j in range(len(r3)):
             data[j].append(mydata[j][i][0])
     mydata=data
-    
+    mydata=[[row[i] for row in mydata] for i in range(len(mydata[0]))]
+    for x1 in mydata:
+        for x2 in x1:
+            if isinstance(x2,float):
+                if float('-inf') < x2 < float('inf'):
+                    pass
+                else:
+                    err2.append(x1)
+                    break
+            else:
+                err2.append(x1)
+                break
+    for x3 in err2:
+        mydata.remove(x3)
+    mydata=[[row[i] for row in mydata] for i in range(len(mydata[0]))]
+    print(err)
 class Button(QPushButton):
     def __init__(self, title, parent):
         super().__init__(title, parent)
@@ -68,67 +100,67 @@ class Example(QWidget):
     def initUI(self):
         self.setAcceptDrops(True)
 
-        self.button1 = Button("文件", self)
+        self.button1 = Button("File", self)
         self.button1.setFixedSize(230,60)
         self.button1.move(0, 90)
         self.button1.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
 
-        self.button2 = Button("通道选择", self)
+        self.button2 = Button("Channel", self)
         self.button2.move(0, 150)
         self.button2.setFixedSize(230,60)
         self.button2.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
 
-        self.lab=QLabel('预处理',self)
+        self.lab=QLabel('Pretreatment',self)
         self.lab.move(0, 220)
-        self.lab.setStyleSheet("QLabel{color:white}"
+        self.lab.setStyleSheet("QLabel{color:#F5F5DC}"
                                 "QLabel{background-color:rgb(54, 54, 54)}")
 
-        self.button7 = Button("滤波", self)
+        self.button7 = Button("Wave filtering", self)
         self.button7.move(0, 260)
         self.button7.setFixedSize(230,60)
         self.button7.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
 
-        self.button3 = Button("小波去噪", self)
+        self.button3 = Button("Wavelet denoising", self)
         self.button3.move(0, 320)
         self.button3.setFixedSize(230,60)
         self.button3.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
 
-        self.lab2=QLabel('特征提取',self)
+        self.lab2=QLabel('Feature extraction',self)
         self.lab2.move(0, 390)
-        self.lab2.setStyleSheet("QLabel{color:white}"
+        self.lab2.setStyleSheet("QLabel{color:#F5F5DC}"
                                 "QLabel{background-color:rgb(54, 54, 54)}")
 
-        self.button4 = Button("fft", self)
+        self.button4 = Button("Fft", self)
         self.button4.move(0, 430)
         self.button4.setFixedSize(230,60)
         self.button4.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
 
-        self.button6 = Button("功率谱", self)
+        self.button6 = Button("Power spectrum", self)
         self.button6.move(0, 490)
         self.button6.setFixedSize(230,60)
         self.button6.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
 
-        self.button8 = Button("倒频谱", self)
+        self.button8 = Button("Cepstrum", self)
         self.button8.move(0, 550)
         self.button8.setFixedSize(230,60)
         self.button8.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
                                 
-        self.button11 = Button("HB", self)
+        self.button11 = Button("Merge input", self)
         self.button11.move(0, 610)
         self.button11.setFixedSize(230,60)
         self.button11.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
 
-        self.lab3=QLabel('分类',self)
+        self.lab3=QLabel('Classification',self)
         self.lab3.move(0, 680)
-        self.lab3.setStyleSheet("QLabel{color:white}"
+        self.lab3.setStyleSheet("QLabel{color:#F5F5DC}"
                                 "QLabel{background-color:rgb(54, 54, 54)}")
 
 
@@ -150,9 +182,9 @@ class Example(QWidget):
         self.button10.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton{background-color:rgb(54, 54, 54)}")
 
-        self.lab4=QLabel('聚类',self)
+        self.lab4=QLabel('Clustering',self)
         self.lab4.move(0, 910)
-        self.lab4.setStyleSheet("QLabel{color:white}"
+        self.lab4.setStyleSheet("QLabel{color:#F5F5DC}"
                                 "QLabel{background-color:rgb(54, 54, 54)}")
                             
         self.button12 = Button("kmeans", self)
@@ -171,7 +203,7 @@ class Example(QWidget):
         position = e.pos()
         if(230<position.x()<1200 and 80<position.y()):
             if self.button1.isDown():
-                self.pu = WJ('文件',self)
+                self.pu = WJ('File',self)
                 ch[0]=ch[0]+1
                 self.pu.ch=ch[0]
                 self.pu.clicked.connect(self.upd)
@@ -181,7 +213,7 @@ class Example(QWidget):
                 r, filetype = QFileDialog.getOpenFileName(self,"选取文件","./", "Csv Files (*.csv)")
                 self.pu.r=r
             elif self.button2.isDown():
-                self.pu2 = TD('通道选择',self)
+                self.pu2 = TD('Channel',self)
                 ch[1]=ch[1]+1
                 self.pu2.ch=ch[1]
                 self.pu2.clicked.connect(self.upd)
@@ -189,21 +221,21 @@ class Example(QWidget):
                 self.pu2.setVisible(True)
                 self.button2.setDisabled(True)
             elif self.button3.isDown():
-                self.pu3 = XB('小波去噪',self)
+                self.pu3 = XB('Wavelet denoising',self)
                 ch[2]=ch[2]+1
                 self.pu3.ch=ch[2]
                 self.pu3.clicked.connect(self.upd)
                 self.pu3.move(position)
                 self.pu3.setVisible(True)
             elif self.button7.isDown():
-                self.pu7 = LvB('滤波',self)
+                self.pu7 = LvB('Wave filtering',self)
                 ch[3]=ch[3]+1
                 self.pu7.ch=ch[3]
                 self.pu7.clicked.connect(self.upd)
                 self.pu7.move(position)
                 self.pu7.setVisible(True)
             elif self.button4.isDown():
-                self.pu4 = FFT('fft',self)
+                self.pu4 = FFT('Fft',self)
                 ch[4]=ch[4]+1
                 self.pu4.ch=ch[4]
                 self.pu4.clicked.connect(self.upd)
@@ -211,14 +243,14 @@ class Example(QWidget):
                 self.pu4.setVisible(True)
                 self.button4.setDisabled(True)
             elif self.button6.isDown():
-                self.pu6 = GLP('功率谱',self)
+                self.pu6 = GLP('Power spectrum',self)
                 ch[5]=ch[5]+1
                 self.pu6.ch=ch[5]
                 self.pu6.clicked.connect(self.upd)
                 self.pu6.move(position)
                 self.pu6.setVisible(True)
             elif self.button8.isDown():
-                self.pu8 = DPP('倒频谱',self)
+                self.pu8 = DPP('Cepstrum',self)
                 ch[6]=ch[6]+1
                 self.pu8.ch=ch[6]
                 self.pu8.clicked.connect(self.upd)
@@ -250,7 +282,7 @@ class Example(QWidget):
                 self.pu10.move(position)
                 self.pu10.setVisible(True)
             elif self.button11.isDown():
-                self.pu11 = HB('hb',self)
+                self.pu11 = HB('Merge input',self)
                 self.pu11.r=r
                 ch[10]=ch[10]+1
                 self.pu11.ch=ch[10]
@@ -271,7 +303,7 @@ class Example(QWidget):
             # self.formLayout.addRow(QLabel("warnning:"),QLabel("不在显示区域内"))
             self.tableWidget.setRowCount(self.tableWidget.rowCount()+1)
             self.tableWidget.setSpan(self.tableWidget.rowCount()-1,0,1,2)
-            newItem = QTableWidgetItem("不在按钮放置范围内") 
+            newItem = QTableWidgetItem("Not within the range of button placement") 
             self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem) 
     def print(self,sender):
         # label=QLabel(sender.name+':')
@@ -284,7 +316,7 @@ class Example(QWidget):
         # label=QLabel('通道')
         # label2=QLabel(str(r3))
         self.tableWidget.setRowCount(self.tableWidget.rowCount()+1)
-        newItem = QTableWidgetItem('通道')
+        newItem = QTableWidgetItem('Channel')
         newItem2 = QTableWidgetItem(str(r3))
         self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
         self.tableWidget.setItem(self.tableWidget.rowCount()-1, 1, newItem2)
@@ -306,12 +338,15 @@ class Example(QWidget):
             self.update()
     def undo(self):
         global sig
-        self.tableWidget.setRowCount(self.tableWidget.rowCount()+2)
-        self.tableWidget.setSpan(self.tableWidget.rowCount()-1,0,1,2)
-        newItem = QTableWidgetItem("取消成功！")
-        self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
+        if len(p) !=0 or len(pub)!=0:
+            self.tableWidget.setRowCount(self.tableWidget.rowCount()+2)
+            self.tableWidget.setSpan(self.tableWidget.rowCount()-1,0,1,2)
+            newItem = QTableWidgetItem("Cancellation succeeded！")
+            self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
         if sig==0:
-            p.pop()
+            if len(p) !=0:
+                p.pop()
+                pub[0].mdata.clear()
         else:
             sig=0
             pub[0].setStyleSheet("QPushButton{color:black}""QPushButton{background-color:rgb(203, 248, 235)}")
@@ -319,20 +354,21 @@ class Example(QWidget):
             pub.clear()
 
     def upd(self):
-        global a,b,c,d,sig,mydata,dat,pub
+        global a,b,c,d,sig,mydata,dat,pub,err
         sender = self.sender()
         if sig==0:
             sender.setStyleSheet("QPushButton{background-image:url(1.png);background-color:rgba(255, 255, 255,0);color:black}")
             sender.setDisabled(True)
+            pub.clear()
             pub.append(sender)
-        if sender.text()=="文件":
+        if sender.text()=="File":
             if sig==0:
                 a=self.pu.x()
                 b=self.pu.y()
                 sig=sig+1
                 sender.r=r
-                self.front='文件'
-                with codecs.open('data.txt','w','utf-8') as f:
+                self.front='File'
+                with codecs.open('code.txt','w','utf-8') as f:
                     f.write('from mtry import *\nr=\''+r+'\'')
                 # label=QLabel(sender.name+':')
                 # label.setStyleSheet('font-size:30px;')
@@ -345,7 +381,7 @@ class Example(QWidget):
                 # line=QLabel(r)
                 # self.formLayout.addRow(label,line)
                 self.tableWidget.setRowCount(self.tableWidget.rowCount()+1)
-                newItem = QTableWidgetItem('文件路径')
+                newItem = QTableWidgetItem('File route')
                 newItem2 = QTableWidgetItem(r)
                 self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
                 self.tableWidget.setItem(self.tableWidget.rowCount()-1, 1, newItem2)
@@ -355,7 +391,7 @@ class Example(QWidget):
                     # label=QLabel('无标签')
                     # line=QLabel()
                     self.tableWidget.setRowCount(self.tableWidget.rowCount()+1)
-                    newItem = QTableWidgetItem('无标签')
+                    newItem = QTableWidgetItem('No label')
                     self.tableWidget.setSpan(self.tableWidget.rowCount()-1,0,1,2)
                     self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
                     # self.formLayout.addRow(label,line)
@@ -369,7 +405,7 @@ class Example(QWidget):
                     # label=QLabel('无被试者信息')
                     # line=QLabel()
                     self.tableWidget.setRowCount(self.tableWidget.rowCount()+1)
-                    newItem = QTableWidgetItem('无被试者信息')
+                    newItem = QTableWidgetItem('No subject information')
                     self.tableWidget.setSpan(self.tableWidget.rowCount()-1,0,1,2)
                     self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
                     # self.formLayout.addRow(label,line)
@@ -389,22 +425,28 @@ class Example(QWidget):
             else:
                 self.tableWidget.setRowCount(self.tableWidget.rowCount()+2)
                 self.tableWidget.setSpan(self.tableWidget.rowCount()-1,0,1,2)
-                newItem = QTableWidgetItem("此连线是非法的") 
+                newItem = QTableWidgetItem("This connection is illegal") 
                 self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
-        elif sender.text()=="通道选择":
+        elif sender.text()=="Channel":
             if sig==0:
                 a=self.pu2.x()
                 b=self.pu2.y()
-                self.front='通道选择'
+                self.front='Channel'
                 self.pushButton_2.setDisabled(True)
                 sig=sig+1
                 if self.pu2.r=='':
                     getdata()
                     self.pu2.r='1'
+                if len(err)!=0:
+                    self.tableWidget.setRowCount(self.tableWidget.rowCount()+1)
+                    newItem = QTableWidgetItem("Error colume(Ignored)：")
+                    newItem2 = QTableWidgetItem(str(err))
+                    self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
+                    self.tableWidget.setItem(self.tableWidget.rowCount()-1, 1, newItem2)
                 dat=mydata
                 sender.mdata=mydata
                 sender.do()
-                with codecs.open('data.txt','a','utf-8') as f:
+                with codecs.open('code.txt','a','utf-8') as f:
                     f.write('\nr3=[')
                     for i in range(len(r3)-1):
                         f.write('\''+r3[i]+'\',')
@@ -420,11 +462,12 @@ for i in range(len(mydata[0])):
         data[j].append(mydata[j][i][0])
 mydata=data''')
             else:
-                if self.front=='文件':
+                if self.front=='File':
                     c=self.pu2.x()
                     pub[0].setStyleSheet("QPushButton{color:black}""QPushButton{background-color:rgb(203, 248, 235)}")
                     pub[0].setDisabled(False)
                     pub.clear()
+                    pub.append(sender)
                     d=self.pu2.y()
                     p.append([a,b,c,d])
                     win2.show()
@@ -434,11 +477,11 @@ mydata=data''')
                 else:
                     self.tableWidget.setRowCount(self.tableWidget.rowCount()+2)
                     self.tableWidget.setSpan(self.tableWidget.rowCount()-1,0,1,2)
-                    newItem = QTableWidgetItem("此连线是非法的") 
+                    newItem = QTableWidgetItem("This connection is illegal") 
                     self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
-        elif sender.text()=="hb":
+        elif sender.text()=="Merge input":
             if sig==0:
-                self.front="hb"
+                self.front="Merge input"
                 a=sender.x()
                 b=sender.y()
                 sender.do()
@@ -449,6 +492,7 @@ mydata=data''')
                 pub[0].setStyleSheet("QPushButton{color:black}""QPushButton{background-color:rgb(203, 248, 235)}")
                 pub[0].setDisabled(False)
                 pub.clear()
+                pub.append(sender)
                 c=sender.x()
                 d=sender.y()
                 p.append([a,b,c,d])
@@ -487,6 +531,7 @@ mydata=data''')
                 pub[0].setStyleSheet("QPushButton{color:black}""QPushButton{background-color:rgb(203, 248, 235)}")
                 pub[0].setDisabled(False)
                 pub.clear()
+                pub.append(sender)
                 p.append([a,b,c,d])
                 sig=0
                 sender.mdata=dat
@@ -514,15 +559,20 @@ mydata=data''')
                     # label2=QLabel('')
                     # label.setStyleSheet('font-size:30px;')
                     self.tableWidget.setRowCount(self.tableWidget.rowCount()+2)
-                    newItem = QTableWidgetItem('分类结果')
+                    newItem = QTableWidgetItem('Classification results')
                     self.tableWidget.setSpan(self.tableWidget.rowCount()-1,0,1,2)
                     self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
                     # self.formLayout.addRow(label,label2)
                     # label=QLabel('标签预测')
                     # label2=QLabel(str(sender.b))
                     self.tableWidget.setRowCount(self.tableWidget.rowCount()+1)
-                    newItem = QTableWidgetItem('标签预测')
+                    newItem = QTableWidgetItem('Label prediction')
                     newItem2 = QTableWidgetItem(str(sender.b))
+                    self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
+                    self.tableWidget.setItem(self.tableWidget.rowCount()-1, 1, newItem2)
+                    self.tableWidget.setRowCount(self.tableWidget.rowCount()+1)
+                    newItem = QTableWidgetItem('Accuracy')
+                    newItem2 = QTableWidgetItem(str(sender.per))
                     self.tableWidget.setItem(self.tableWidget.rowCount()-1, 0, newItem)
                     self.tableWidget.setItem(self.tableWidget.rowCount()-1, 1, newItem2)
                     # self.formLayout.addRow(label,label2)
@@ -534,13 +584,13 @@ class window2(QDialog):
         self.pushButton_2.clicked.connect(self.sd)
         self.pushButton_2.clicked.connect(self.close)
         self.pushButton.clicked.connect(self.__initUI__)
-        self.pushButton.setStyleSheet("QPushButton{color:black}"
+        self.pushButton.setStyleSheet("QPushButton{color:blue}"
                                   "QPushButton:hover{color:red}"
                                   "QPushButton{background-color:rgb(78,255,255)}"
                                   "QPushButton{border:2px}"
                                   "QPushButton{border-radius:10px}"
                                   "QPushButton{padding:2px 4px}")
-        self.pushButton_2.setStyleSheet("QPushButton{color:black}"
+        self.pushButton_2.setStyleSheet("QPushButton{color:blue}"
                                   "QPushButton:hover{color:red}"
                                   "QPushButton{background-color:rgb(78,255,255)}"
                                   "QPushButton{border:2px}"
@@ -553,7 +603,7 @@ class window2(QDialog):
         self.df=pd.read_csv(r)
         self.check=[]
         self.r4=self.df.columns
-        for i in range(0,len(self.r4)-2):
+        for i in range(0,len(self.r4)):
             self.line = QCheckBox(self.r4[i])
             self.line.setChecked(True)
             self.check.append(self.line)
@@ -561,7 +611,7 @@ class window2(QDialog):
     def sd(self):
         global r3
         r3.clear()
-        for i in range(0,len(self.r4)-2):
+        for i in range(0,len(self.r4)):
             if self.check[i].isChecked():
                 r3.append(self.check[i].text())
 class window3(QDialog):
@@ -570,7 +620,7 @@ class window3(QDialog):
         self.set_u()
         self.setWindowIcon(QIcon(r"C:\Users\qq\Pictures\src=http___pic.51yuansu.com_pic3_cover_03_06_80_5b35d9015cba3_610.jpg&refer=http___pic.51yuansu.jfif"))
         self.setWindowOpacity(0.90)
-        self.pushButton_2.setStyleSheet("QPushButton{color:black}"
+        self.pushButton_2.setStyleSheet("QPushButton{color:white}"
                                   "QPushButton:hover{color:red}"
                                   "QPushButton{background-color:rgb(78,255,255)}"
                                   "QPushButton{border:2px}"
